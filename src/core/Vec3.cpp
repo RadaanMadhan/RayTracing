@@ -49,6 +49,9 @@ Vec3 Vec3::operator-(const Vec3& other) const {
 Vec3 Vec3::operator-(const float other) const {
     return {this->x - other, this->y - other, this->z - other};
 }
+Vec3 Vec3::operator-() const {
+    return {-this->x, -this->y, -this->z};
+}
 Vec3 Vec3::operator*(const float other) const {
     return {this->x * other, this->y * other, this->z * other};
 }
