@@ -10,7 +10,7 @@ Camera::Camera(const Vec3 origin, const Vec3 lookAt, const Vec3 up, const float 
     this->origin = origin;
     this->forwardVector = (lookAt - origin).normalize();
     this->rightVector = forwardVector.cross(up).normalize();
-    this->upVector = forwardVector.cross(rightVector).normalize();
+    this->upVector = rightVector.cross(forwardVector).normalize();
     this->fov = fov;
     this->aspect = aspect;
     const float height = 2 * std::tan(fov / 2); //Setting d = 1
@@ -20,7 +20,7 @@ Camera::Camera(const Vec3 origin, const Vec3 lookAt, const Vec3 up, const float 
     this->lowerLeftCorner = origin + forwardVector - horizontalSpan / 2 - verticalSpan / 2; //Setting d = 1
 }
 Ray Camera::getRay(const float u, const float v) const {
-    return {origin, u * horizontalSpan + v * verticalSpan + lowerLeftCorner};
+    return {origin, (lowerLeftCorner + u * horizontalSpan + v * verticalSpan - origin).normalize()};
 }
 void Camera::setFov(const float fov) {
     const float height = 2 * std::tan(fov / 2);

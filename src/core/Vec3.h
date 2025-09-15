@@ -24,6 +24,7 @@ public:
   Vec3 operator-(const Vec3 &other) const;
   Vec3 operator-(float other) const;
   Vec3 operator-() const;
+  Vec3 operator*(const Vec3 &other) const;
   Vec3 operator*(float other) const;
   Vec3 operator/(float other) const;
   void operator+=(const Vec3& rhs);
@@ -31,6 +32,7 @@ public:
   void operator*=(float other);
   void operator/=(float other);
   bool operator==(const Vec3& other) const;
+  bool nearZero() const;
 };
 
 Vec3 operator+(float lhs, const Vec3& rhs);

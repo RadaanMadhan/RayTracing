@@ -16,7 +16,7 @@ private:
   Vec3 forwardVector;
   Vec3 rightVector;
   Vec3 upVector;
-  float fov;
+  float fov; // in Radians
   float aspect;
   Vec3 horizontalSpan;
   Vec3 verticalSpan;

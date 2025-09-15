@@ -7,18 +7,8 @@
 
 #include "core/Vec3.h"
 #include "core/Ray.h"
-
-struct HitRecord {
-    Vec3 point;
-    Vec3 normal;
-    float t{}; //Ray: origin + t*direction
-    bool frontFace{};
-
-    void setFaceNormal(const Ray& r, const Vec3& outwardNormal) {
-        frontFace = r.direction.dot(outwardNormal) < 0;
-        normal = frontFace ? outwardNormal : -outwardNormal;
-    }
-};
+#include <memory>
+#include "geometry/HitRecord.h"
 
 class Hittable {
 public:

@@ -52,6 +52,9 @@ Vec3 Vec3::operator-(const float other) const {
 Vec3 Vec3::operator-() const {
     return {-this->x, -this->y, -this->z};
 }
+Vec3 Vec3::operator*(const Vec3 &other) const {
+    return {this->x * other.x, this->y * other.y, this->z * other.z};
+}
 Vec3 Vec3::operator*(const float other) const {
     return {this->x * other, this->y * other, this->z * other};
 }
@@ -91,3 +94,8 @@ Vec3 operator*(const float lhs, const Vec3& rhs) {
 Vec3 operator/(const float lhs, const Vec3& rhs) {
     return {lhs / rhs.x, lhs / rhs.y, lhs / rhs.z};
 }
+bool Vec3::nearZero() const {
+    constexpr float s = 1e-8f;
+    return (fabs(x) < s) && (fabs(y) < s) && (fabs(z) < s);
+}
+

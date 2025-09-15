@@ -3,7 +3,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/geometry/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/materials/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/render/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/intersection/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/*.cpp"
 )
 
 add_library(raytracer_lib ${SOURCES})

@@ -6,9 +6,10 @@
 
 #include <cmath>
 
-Sphere::Sphere(const Vec3 center, const float radius) {
+Sphere::Sphere(const Vec3 center, const float radius, const std::shared_ptr<Material> &material) {
     this->center = center;
     this->radius = radius;
+    this->material = material;
 }
 bool Sphere::hit(const Ray& r, float t_min, float t_max, HitRecord& rec) const {
     Vec3 oc = r.origin - center;
@@ -36,6 +37,6 @@ bool Sphere::hit(const Ray& r, float t_min, float t_max, HitRecord& rec) const {
     rec.t = root;
     rec.point = r.at(root);
     rec.normal = (rec.point - center) / radius;
-
+    rec.material = this->material;
     return true;
 }
