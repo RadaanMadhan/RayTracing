@@ -6,9 +6,10 @@
 
 #include <iostream>
 
-#include "utils/random.cpp"
 #include <limits>
+#include <thread>
 #include <materials/Material.h>
+#include <utils/random.cpp>
 
 Renderer::Renderer(const int width, const int height, const int samplesPerPixel, const int maxDepth, const Vec3& backgroundColor) {
     this->width = width;
@@ -18,24 +19,38 @@ Renderer::Renderer(const int width, const int height, const int samplesPerPixel,
     this->backgroundColor = backgroundColor;
 }
 
-void Renderer::render(const HittableList& world, const Camera& camera, Image& image, const std::string &outputFile) const {
-    for (int j = 0; j < height; ++j) {
-        for (int i = 0; i < width; ++i) {
-            Vec3 color(0,0,0);
-            for (int s = 0; s < samplesPerPixel; ++s) {
-                const float u = (i + randomFloat()) / width;
-                const float v = (j + randomFloat()) / height;
-                Ray r = camera.getRay(u, v);
-                color += rayColor(r, world, maxDepth, backgroundColor);
+void Renderer::renderCPU(const HittableList& world, const Camera& camera, Image& image, const std::string &outputFile) const {
+    std::atomic<int> nextRow(0);
+
+    auto worker = [&]() {
+        int j;
+        while ((j = nextRow++) < height) { // claim next row
+            for (int i = 0; i < width; ++i) {
+                Vec3 color(0,0,0);
+                for (int s = 0; s < samplesPerPixel; ++s) {
+                    float u = (i + randomFloat()) / width;
+                    float v = (j + randomFloat()) / height;
+                    Ray r = camera.getRay(u, v);
+                    color += rayColor(r, world, maxDepth, backgroundColor);
+                }
+                color /= samplesPerPixel;
+                //color = Vec3(sqrt(color.x), sqrt(color.y), sqrt(color.z));
+                image.setPixel(i, j, color);
             }
-            color /= samplesPerPixel;
-
-            //gamma correction
-            color = Vec3(sqrt(color.x), sqrt(color.y), sqrt(color.z));
-
-            image.setPixel(i, j, color);
         }
+    };
+
+    int numThreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+
+    for (int t = 0; t < numThreads; ++t) {
+        threads.emplace_back(worker);
     }
+
+    for (auto &thread : threads) {
+        thread.join();
+    }
+
     image.writePPM(outputFile);
 }
 

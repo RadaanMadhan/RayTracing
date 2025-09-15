@@ -16,7 +16,7 @@ int main() {
     // Image
     constexpr int imageWidth = 800;
     constexpr int imageHeight = 400;
-    constexpr int samplesPerPixel = 200;
+    constexpr int samplesPerPixel = 2000;
     constexpr int maxDepth = 50;
 
     Image image(imageWidth, imageHeight);
@@ -51,7 +51,7 @@ int main() {
     Renderer renderer(imageWidth, imageHeight, samplesPerPixel, maxDepth, backgroundColor);
 
     std::cout << "Begin render\n";
-    renderer.render(world, camera, image, "render.ppm");
+    renderer.renderCPU(world, camera, image, "render.ppm");
     std::cout << "Done\n";
 
     return 0;

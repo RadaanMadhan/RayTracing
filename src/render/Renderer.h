@@ -18,7 +18,8 @@ private:
     Vec3 backgroundColor;
 public:
     Renderer(int width, int height, int samplesPerPixel, int maxDepth, const Vec3& backgroundColor);
-    void render(const HittableList &world, const Camera &camera, Image &image, const std::string &outputFile) const;
+    void renderCPU(const HittableList &world, const Camera &camera, Image &image, const std::string &outputFile) const;
+    void renderGPU(const HittableList &world, const Camera &camera, Image &image, const std::string &outputFile) const;
 };
 
 Vec3 rayColor(const Ray& r, const Hittable& world, int depth, const Vec3& backgroundColor);
