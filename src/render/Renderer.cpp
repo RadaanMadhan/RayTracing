@@ -20,37 +20,48 @@ Renderer::Renderer(const int width, const int height, const int samplesPerPixel,
 }
 
 void Renderer::renderCPU(const HittableList& world, const Camera& camera, Image& image, const std::string &outputFile) const {
-    std::atomic<int> nextRow(0);
+    const int tileSize = 32; // size of each tile in pixels
+    const int tilesX = (width + tileSize - 1) / tileSize;
+    const int tilesY = (height + tileSize - 1) / tileSize;
+
+    std::atomic<int> nextTile(0);
 
     auto worker = [&]() {
-        int j;
-        while ((j = nextRow++) < height) { // claim next row
-            for (int i = 0; i < width; ++i) {
-                Vec3 color(0,0,0);
-                for (int s = 0; s < samplesPerPixel; ++s) {
-                    float u = (i + randomFloat()) / width;
-                    float v = (j + randomFloat()) / height;
-                    Ray r = camera.getRay(u, v);
-                    color += rayColor(r, world, maxDepth, backgroundColor);
+        int tileIndex;
+        while ((tileIndex = nextTile++) < tilesX * tilesY) {
+            int tileX = tileIndex % tilesX;
+            int tileY = tileIndex / tilesX;
+
+            int xStart = tileX * tileSize;
+            int yStart = tileY * tileSize;
+            int xEnd = std::min(xStart + tileSize, width);
+            int yEnd = std::min(yStart + tileSize, height);
+
+            for (int j = yStart; j < yEnd; ++j) {
+                for (int i = xStart; i < xEnd; ++i) {
+                    Vec3 color(0, 0, 0);
+                    for (int s = 0; s < samplesPerPixel; ++s) {
+                        float u = (i + randomFloat()) / width;
+                        float v = (j + randomFloat()) / height;
+                        Ray r = camera.getRay(u, v);
+                        color += rayColor(r, world, maxDepth, backgroundColor);
+                    }
+                    color /= float(samplesPerPixel);
+                    image.setPixel(i, j, color);
                 }
-                color /= samplesPerPixel;
-                //color = Vec3(sqrt(color.x), sqrt(color.y), sqrt(color.z));
-                image.setPixel(i, j, color);
             }
         }
     };
 
     int numThreads = std::thread::hardware_concurrency();
     std::vector<std::thread> threads;
-
-    for (int t = 0; t < numThreads; ++t) {
+    for (int t = 0; t < numThreads; ++t)
         threads.emplace_back(worker);
-    }
 
-    for (auto &thread : threads) {
+    for (auto &thread : threads)
         thread.join();
-    }
 
+    image.filter(5, 1.0f);
     image.writePPM(outputFile);
 }
 

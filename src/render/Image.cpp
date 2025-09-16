@@ -8,6 +8,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include "utils/filter.cpp"
 
 Image::Image(const int w, const int h) {
     this->width = w;
@@ -20,10 +21,10 @@ int Image::getWidth() const{
 int Image::getHeight() const {
     return this->height;
 }
-void Image::setPixel(int x, int y, const Vec3 &color) {
+void Image::setPixel(const int x, const int y, const Vec3 &color) {
     pixels[y * width + x] = color;
 }
-Vec3 Image::getPixel(int x, int y) const {
+Vec3 Image::getPixel(const int x, const int y) const {
     return pixels[y * width + x];
 }
 void Image::writePPM(const std::string &filename) const{
@@ -45,5 +46,8 @@ void Image::writePPM(const std::string &filename) const{
     }
     out.close();
     std::cout << "Finished writing " << filename << std::endl;
+}
+void Image::filter(const int kernelSize, const float sigma) {
+    gaussianFilter(this->pixels, this->width, this->height, kernelSize, sigma);
 }
 

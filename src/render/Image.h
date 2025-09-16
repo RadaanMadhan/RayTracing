@@ -17,11 +17,12 @@ private:
 
 public:
     Image(int w, int h);
-    int getWidth() const;
-    int getHeight() const;
+    [[nodiscard]] int getWidth() const;
+    [[nodiscard]] int getHeight() const;
     void setPixel(int x, int y, const Vec3& color);
-    Vec3 getPixel(int x, int y) const;
+    [[nodiscard]] Vec3 getPixel(int x, int y) const;
     void writePPM(const std::string& filename) const;
+    void filter(int kernelSize, float sigma);
 };
 
 

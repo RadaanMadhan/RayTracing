@@ -11,12 +11,14 @@
 #include "materials/Lambertian.h"
 #include <cmath>
 #include <materials/Emissive.h>
+#include <chrono>
+
 
 int main() {
     // Image
     constexpr int imageWidth = 800;
     constexpr int imageHeight = 400;
-    constexpr int samplesPerPixel = 2000;
+    constexpr int samplesPerPixel = 200;
     constexpr int maxDepth = 50;
 
     Image image(imageWidth, imageHeight);
@@ -51,8 +53,11 @@ int main() {
     Renderer renderer(imageWidth, imageHeight, samplesPerPixel, maxDepth, backgroundColor);
 
     std::cout << "Begin render\n";
+    auto start = std::chrono::high_resolution_clock::now();
     renderer.renderCPU(world, camera, image, "render.ppm");
     std::cout << "Done\n";
-
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::cout << "Render took " << diff.count() << " seconds\n";
     return 0;
 }
