@@ -2,12 +2,15 @@
 // Created by Radaa on 14/09/2025.
 //
 #include <gtest/gtest.h>
+#include <materials/Lambertian.h>
+
 #include "geometry/Sphere.h"
 #include "core/Ray.h"
 #include "core/Vec3.h"
 
 TEST(SphereTest, RayHitsSphere) {
-    Sphere sphere(Vec3(0, 0, -5), 1.0f);
+    auto mat = std::make_shared<Lambertian>(Vec3(0.0f, 0.0f, 0.0f));
+    Sphere sphere(Vec3(0, 0, -5), 1.0f, mat);
     Ray ray(Vec3(0, 0, 0), Vec3(0, 0, -1));
     HitRecord rec;
 
@@ -20,7 +23,8 @@ TEST(SphereTest, RayHitsSphere) {
 }
 
 TEST(SphereTest, RayMissesSphere) {
-    Sphere sphere(Vec3(0, 0, -5), 1.0f);
+    auto mat = std::make_shared<Lambertian>(Vec3(0.0f, 0.0f, 0.0f));
+    Sphere sphere(Vec3(0, 0, -5), 1.0f, mat);
     Ray ray(Vec3(0, 0, 0), Vec3(0, 1, 0));
     HitRecord rec;
 
@@ -30,7 +34,8 @@ TEST(SphereTest, RayMissesSphere) {
 }
 
 TEST(SphereTest, RayStartsInsideSphere) {
-    Sphere sphere(Vec3(0, 0, -5), 2.0f);
+    auto mat = std::make_shared<Lambertian>(Vec3(0.0f, 0.0f, 0.0f));
+    Sphere sphere(Vec3(0, 0, -5), 2.0f, mat);
     Ray ray(Vec3(0, 0, -5), Vec3(0, 0, 1));
     HitRecord rec;
 
@@ -41,7 +46,8 @@ TEST(SphereTest, RayStartsInsideSphere) {
 }
 
 TEST(SphereTest, RayTooCloseToHit) {
-    Sphere sphere(Vec3(0, 0, -5), 1.0f);
+    auto mat = std::make_shared<Lambertian>(Vec3(0.0f, 0.0f, 0.0f));
+    Sphere sphere(Vec3(0, 0, -5), 1.0f, mat);
     Ray ray(Vec3(0, 0, 0), Vec3(0, 0, -1));
     HitRecord rec;
 
@@ -51,7 +57,8 @@ TEST(SphereTest, RayTooCloseToHit) {
 }
 
 TEST(SphereTest, RayHitsAtTwoPoints) {
-    Sphere sphere(Vec3(0, 0, -5), 1.0f);
+    auto mat = std::make_shared<Lambertian>(Vec3(0.0f, 0.0f, 0.0f));
+    Sphere sphere(Vec3(0, 0, -5), 1.0f, mat);
     Ray ray(Vec3(0, 0, -10), Vec3(0, 0, 1));
     HitRecord rec;
 
