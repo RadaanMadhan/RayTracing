@@ -3,8 +3,18 @@ name: 🧪 CI - Unit Tests
 on:
   push:
     branches: [ master, main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [ master, main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/ci.yml'
 
 jobs:
   test:

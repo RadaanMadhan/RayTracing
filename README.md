@@ -1,5 +1,7 @@
 # 🌟 RayTracing
 
+[![CI - Unit Tests](https://github.com/RadaanMadhan/RayTracing/actions/workflows/ci.yml/badge.svg)](https://github.com/RadaanMadhan/RayTracing/actions/workflows/ci.yml)
+
 > A high-performance C++ ray tracing engine that generates photorealistic images using Monte Carlo path tracing
 
 This project implements a CPU-based ray tracer with support for various materials, realistic lighting, and geometric primitives, producing stunning rendered images with physically-based accuracy.
@@ -219,9 +221,3 @@ This ray tracing implementation is inspired by:
 - 🔬 Real-time rendering techniques and Monte Carlo methods
 
 ---
-
-<div align="center">
-  <strong>Made with ❤️ and lots of ☕</strong>
-  <br>
-  <em>Happy Ray Tracing! 🌟</em>
-</div>
