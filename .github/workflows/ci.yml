@@ -1,0 +1,174 @@
+name: 🧪 CI - Build & Test
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  test:
+    name: 🔨 Build & Test
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        build_type: [Debug, Release]
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: msvc
+          - os: macos-latest
+            compiler: clang
+
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1.14
+      with:
+        cmake-version: '3.29'
+        
+    - name: 🖥️ Setup C++ Environment (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libfreetype6-dev
+        
+    - name: 🖥️ Setup C++ Environment (macOS)  
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        # macOS has most dependencies built-in
+        
+    - name: 🖥️ Setup MSVC (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1
+      
+    - name: 📁 Create Build Directory
+      run: mkdir build
+      
+    - name: ⚙️ Configure CMake
+      working-directory: build
+      run: |
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        
+    - name: 🔨 Build Project
+      working-directory: build
+      run: |
+        cmake --build . --config ${{ matrix.build_type }} --parallel
+        
+    - name: 🧪 Run Unit Tests
+      working-directory: build
+      run: |
+        ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
+        
+    - name: 🧪 Run Individual Test Executables (Fallback)
+      if: failure()
+      working-directory: build
+      shell: bash
+      run: |
+        echo "CTest failed, running individual test executables..."
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          ./tests/${{ matrix.build_type }}/Vec3_tests.exe || echo "Vec3_tests failed"
+          ./tests/${{ matrix.build_type }}/Ray_tests.exe || echo "Ray_tests failed" 
+          ./tests/${{ matrix.build_type }}/Camera_tests.exe || echo "Camera_tests failed"
+          ./tests/${{ matrix.build_type }}/Sphere_tests.exe || echo "Sphere_tests failed"
+        else
+          ./tests/Vec3_tests || echo "Vec3_tests failed"
+          ./tests/Ray_tests || echo "Ray_tests failed"
+          ./tests/Camera_tests || echo "Camera_tests failed" 
+          ./tests/Sphere_tests || echo "Sphere_tests failed"
+        fi
+        
+    - name: 📊 Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.build_type }}
+        path: build/Testing/Temporary/
+        retention-days: 7
+        
+  build-main-executable:
+    name: 🎯 Build Main Executable
+    runs-on: ${{ matrix.os }}
+    needs: test
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1.14
+      with:
+        cmake-version: '3.29'
+        
+    - name: 🖥️ Setup C++ Environment (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libfreetype6-dev
+        
+    - name: 🖥️ Setup C++ Environment (macOS)
+      if: matrix.os == 'macos-latest'  
+      run: |
+        brew update
+        
+    - name: 🖥️ Setup MSVC (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1
+      
+    - name: 📁 Create Build Directory
+      run: mkdir build
+      
+    - name: ⚙️ Configure CMake
+      working-directory: build
+      run: |
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        
+    - name: 🔨 Build Main Executable
+      working-directory: build
+      run: |
+        cmake --build . --config Release --parallel --target raytracer
+        
+    - name: 📤 Upload Executable Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: raytracer-${{ matrix.os }}
+        path: |
+          build/src/raytracer*
+          build/src/Release/raytracer*
+        retention-days: 30
+        
+  # Optional: Code Quality Checks
+  code-quality:
+    name: 📝 Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Run clang-format Check
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format
+        find src tests -name "*.cpp" -o -name "*.h" | xargs clang-format --dry-run --Werror
+      continue-on-error: true
+      
+    - name: 📊 Count Lines of Code
+      run: |
+        echo "## 📊 Code Statistics" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY  
+        echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| C++ Files | $(find src -name "*.cpp" -o -name "*.h" | wc -l) |" >> $GITHUB_STEP_SUMMARY
+        echo "| Test Files | $(find tests -name "*.cpp" | wc -l) |" >> $GITHUB_STEP_SUMMARY
+        echo "| Total Lines | $(find src tests -name "*.cpp" -o -name "*.h" | xargs wc -l | tail -1 | awk '{print $1}') |" >> $GITHUB_STEP_SUMMARY
