@@ -20,6 +20,34 @@ jobs:
       with:
         cmake-version: '3.29'
         
+    - name: Cache APT packages
+      uses: actions/cache@v4
+      with:
+        path: /var/cache/apt
+        key: apt-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        restore-keys: |
+          apt-${{ runner.os }}-
+        
+    - name: Cache CMake build directory
+      uses: actions/cache@v4
+      with:
+        path: |
+          build
+          !build/src/raytracer*
+          !build/**/*.exe
+        key: cmake-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'src/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+        restore-keys: |
+          cmake-${{ runner.os }}-
+          
+    - name: Cache SFML and GoogleTest dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/_deps
+        key: deps-${{ runner.os }}-${{ hashFiles('src/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+        restore-keys: |
+          deps-${{ runner.os }}-
+        
     - name: Install Dependencies
       run: |
         sudo apt-get update
@@ -27,7 +55,7 @@ jobs:
         
     - name: Configure CMake
       run: |
-        mkdir build
+        mkdir -p build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Debug
         
@@ -39,4 +67,12 @@ jobs:
     - name: Run Tests
       run: |
         cd build
-        ctest --output-on-failure --verbose
+        echo "Running Vec3 tests..."
+        ./tests/Vec3_tests
+        echo "Running Ray tests..."
+        ./tests/Ray_tests
+        echo "Running Camera tests..."
+        ./tests/Camera_tests
+        echo "Running Sphere tests..."
+        ./tests/Sphere_tests
+        echo "All tests completed successfully!"
