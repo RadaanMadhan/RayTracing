@@ -37,3 +37,15 @@ inline Vec3 randomUnitVec() {
 
     return Vec3(x, y, z);
 }
+
+inline Vec3 randomCosineDirection() {
+    float r1 = randomFloat();       // uniform [0,1)
+    float r2 = randomFloat();       // uniform [0,1)
+
+    float z = std::sqrt(1.0f - r2);       // cosine weighting
+    float phi = 2.0f * M_PI * r1;
+    float x = std::cos(phi) * std::sqrt(r2);
+    float y = std::sin(phi) * std::sqrt(r2);
+
+    return Vec3(x, y, z);
+}

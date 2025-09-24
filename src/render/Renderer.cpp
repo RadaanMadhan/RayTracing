@@ -37,14 +37,22 @@ void Renderer::renderCPU(const HittableList& world, const Camera& camera, Image&
             int xEnd = std::min(xStart + tileSize, width);
             int yEnd = std::min(yStart + tileSize, height);
 
+            // Stratified sampling setup
+            int sqrtSamples = std::ceil(std::sqrt(samplesPerPixel));
+            float invSqrtSamples = 1.0f / sqrtSamples;
+
             for (int j = yStart; j < yEnd; ++j) {
                 for (int i = xStart; i < xEnd; ++i) {
                     Vec3 color(0, 0, 0);
-                    for (int s = 0; s < samplesPerPixel; ++s) {
-                        float u = (i + randomFloat()) / width;
-                        float v = (j + randomFloat()) / height;
-                        Ray r = camera.getRay(u, v);
-                        color += rayColor(r, world, maxDepth, backgroundColor);
+                    for (int sx = 0; sx < sqrtSamples; ++sx) {
+                        for (int sy = 0; sy < sqrtSamples; ++sy) {
+                            // Jittered stratified sampling
+                            float u = (i + (sx + randomFloat()) * invSqrtSamples) / width;
+                            float v = (j + (sy + randomFloat()) * invSqrtSamples) / height;
+
+                            Ray r = camera.getRay(u, v);
+                            color += rayColor(r, world, maxDepth, backgroundColor);
+                        }
                     }
                     color /= float(samplesPerPixel);
                     image.setPixel(i, j, color);
@@ -61,13 +69,14 @@ void Renderer::renderCPU(const HittableList& world, const Camera& camera, Image&
     for (auto &thread : threads)
         thread.join();
 
-    image.filter(5, 1.0f);
+    image.filter(3, 1.0f);
     image.writePPM(outputFile);
+    image.displayImage();
 }
 
 Vec3 rayColor(const Ray &r, const Hittable &world, const int depth, const Vec3& backgroundColor) {
 
-    if (depth <= 0) return Vec3(0,0,0);
+    if (depth <= 0) return {0,0,0};
     if (HitRecord rec; world.hit(r, 0.001f, std::numeric_limits<float>::infinity(), rec)) {
         Vec3 emitted = rec.material->emit();
         Vec3 attenuation;
@@ -76,8 +85,8 @@ Vec3 rayColor(const Ray &r, const Hittable &world, const int depth, const Vec3& 
             return emitted + attenuation * rayColor(scattered, world, depth-1, backgroundColor);
         return emitted;
     }
-    // Black Background
-    return Vec3(0,0,0);
+    // Plain Background
+    return backgroundColor;
 
     /*
     // Sky Gradient Background
@@ -85,5 +94,4 @@ Vec3 rayColor(const Ray &r, const Hittable &world, const int depth, const Vec3& 
     const float t = 0.5f * (unitDir.y + 1.0f);
     return (1.0 - t) * Vec3(1,1,1) + t * Vec3(0.5, 0.7, 1.0);
     */
-
 }

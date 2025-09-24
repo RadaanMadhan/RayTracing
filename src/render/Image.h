@@ -11,8 +11,8 @@
 
 class Image {
 private:
-    int width;
-    int height;
+    unsigned width;
+    unsigned height;
     std::vector<Vec3> pixels; // flattened
 
 public:
@@ -23,6 +23,7 @@ public:
     [[nodiscard]] Vec3 getPixel(int x, int y) const;
     void writePPM(const std::string& filename) const;
     void filter(int kernelSize, float sigma);
+    void displayImage();
 };
 
 

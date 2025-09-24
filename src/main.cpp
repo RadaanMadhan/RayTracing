@@ -18,7 +18,7 @@ int main() {
     // Image
     constexpr int imageWidth = 800;
     constexpr int imageHeight = 400;
-    constexpr int samplesPerPixel = 200;
+    constexpr int samplesPerPixel = 2000;
     constexpr int maxDepth = 50;
 
     Image image(imageWidth, imageHeight);
@@ -37,11 +37,15 @@ int main() {
 
     //Objects
     auto whiteLight = std::make_shared<Emissive>(Vec3(10,10,10));
-    auto blue = std::make_shared<Lambertian>(Vec3(0.02f, 0.03f, 0.08f));
-    auto groundMaterial = std::make_shared<Lambertian>(Vec3(0.003f, 0.003f, 0.003f));
+    auto blue = std::make_shared<Lambertian>(Vec3(0.0f, 0.0f, 0.08f));
+    auto red = std::make_shared<Lambertian>(Vec3(0.8f, 0.00f, 0.00f));
+    auto groundMaterial = std::make_shared<Lambertian>(Vec3(0.00f, 0.0005f, 0.00f));
 
-    world.add(std::make_shared<Sphere>(Vec3(0, 0, 0.5), 1.0f, blue));
-    world.add(std::make_shared<Sphere>(Vec3(0, 5, -2), 1.0f, whiteLight));
+    //world.add(std::make_shared<Sphere>(Vec3(-1, 0, 0.5), 1.0f, blue));
+    world.add(std::make_shared<Sphere>(Vec3(0, 0, 0.5), 1.0f, red));
+    world.add(std::make_shared<Sphere>(Vec3(4, 4, 2), 1.0f, whiteLight));
+    world.add(std::make_shared<Sphere>(Vec3(0, 5, 0), 1.0f, whiteLight));
+    //world.add(std::make_shared<Sphere>(Vec3(4, 7, -2), 1.0f, whiteLight));
     world.add(std::make_shared<Sphere>(
         Vec3(0, -1001.5f, 0),  // center far below origin
         1000.0f,                // huge radius
@@ -49,7 +53,7 @@ int main() {
     ));
 
     // Renderer
-    const Vec3 backgroundColor(0.0f, 0.0f, 0.0f);
+    const Vec3 backgroundColor(0.0000001f, 0.0000001f, 0.0000001f);
     Renderer renderer(imageWidth, imageHeight, samplesPerPixel, maxDepth, backgroundColor);
 
     std::cout << "Begin render\n";
